@@ -2,5 +2,7 @@
 .venv
 .DS_Store
 dist/
+data/
+plugins/
 README_hidden.md
 **/__pycache__/

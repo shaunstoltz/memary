@@ -26,7 +26,8 @@ from llama_index.multi_modal_llms.openai import OpenAIMultiModal
 
 from memary.agent.data_types import Context, Message
 from memary.agent.llm_api.tools import (ollama_chat_completions_request,
-                                        openai_chat_completions_request)
+                                        openai_chat_completions_request,
+                                        litellm_chat_completions_request)
 from memary.memory import EntityKnowledgeStore, MemoryStream
 from memary.synonym_expand.synonym import custom_synonym_expand_fn
 
@@ -82,7 +83,7 @@ class Agent(object):
         self.query_llm = Perplexity(
             api_key=pplx_api_key, model="mistral-7b-instruct", temperature=0.5
         )
-        self.gmaps = googlemaps.Client(key=googlemaps_api_key)
+        #self.gmaps = googlemaps.Client(key=googlemaps_api_key)
         Settings.llm = self.llm
         Settings.chunk_size = 512
 
@@ -126,6 +127,7 @@ class Agent(object):
         return f"Agent {self.name}"
 
     def load_llm_model(self, llm_model_name):
+
         if llm_model_name == "gpt-3.5-turbo":
             os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
             self.openai_api_key = os.environ["OPENAI_API_KEY"]
@@ -331,7 +333,15 @@ class Agent(object):
         Returns:
             str: response from the LLM chat model
         """
-        if self.model == "gpt-3.5-turbo":
+        if "anyscale" in self.model :
+            response = litellm_chat_completions_request(
+                llm_message_chat["messages"], self.model
+            )
+
+            total_tokens = response["usage"]["total_tokens"]
+            response = str(response["choices"][0]["message"]["content"])
+
+        elif self.model == "gpt-3.5-turbo":
             response = openai_chat_completions_request(
                 self.model_endpoint, self.openai_api_key, llm_message_chat
             )

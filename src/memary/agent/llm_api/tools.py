@@ -3,7 +3,7 @@
 import urllib
 import logging
 import requests
-
+from litellm import completion
 
 def smart_urljoin(base_url, relative_url):
     """urljoin is stupid and wants a trailing / at the end of the endpoint address, or it will chop the suffix off"""
@@ -77,3 +77,10 @@ def ollama_chat_completions_request(messages, model):
         # Handle other potential errors
         logging.warning(f"Got unknown Exception, exception={e}")
         raise e
+
+def litellm_chat_completions_request(messages, model):
+    response = completion(
+                    model=model,
+                    messages=messages
+                )
+    return response
